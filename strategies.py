@@ -57,7 +57,8 @@ class AdvancedStrategy:
     
     def calculate_volume_profile(self, df: pd.DataFrame) -> Dict[str, float]:
         """Calculate volume analysis indicators"""
-        volume_sma = ta.volume.volume_sma(df.Close, df.Volume, window=20)
+        # Calculate volume moving average using pandas instead of ta.volume.volume_sma
+        volume_sma = df.Volume.rolling(window=20).mean()
         volume_ratio = df.Volume.iloc[-1] / volume_sma.iloc[-1] if volume_sma.iloc[-1] > 0 else 1
         
         return {
