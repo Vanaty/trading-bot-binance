@@ -72,7 +72,22 @@ def main():
             
             # Get current positions and orders
             positions = binance_client.get_positions()
-            open_orders = binance_client.get_open_orders()
+            try:
+                open_orders = {}
+                # Get open orders for each position symbol
+                for symbol in positions:
+                    orders = binance_client.get_open_orders(symbol)
+                    if orders:
+                        open_orders[symbol] = orders
+                # Also check for open orders on other symbols that might not have positions
+                for symbol in symbols[:20]:  # Check a subset to avoid rate limits
+                    if symbol not in open_orders:
+                        orders = binance_client.get_open_orders(symbol)
+                        if orders:
+                            open_orders[symbol] = orders
+            except Exception as e:
+                logging.warning(f"Error getting open orders: {str(e)}")
+                open_orders = {}
             
             logging.info(f'Open positions ({len(positions)}): {positions}')
             
@@ -118,7 +133,15 @@ def main():
                                 if trading_manager.open_order(symbol, signal):
                                     trading_manager.last_symbol = symbol
                                     positions = binance_client.get_positions()
-                                    open_orders = binance_client.get_open_orders()
+                                    # Update open_orders after placing new order
+                                    try:
+                                        open_orders = {}
+                                        for pos_symbol in positions:
+                                            orders = binance_client.get_open_orders(pos_symbol)
+                                            if orders:
+                                                open_orders[pos_symbol] = orders
+                                    except:
+                                        open_orders = {}
                                     sleep(10)  # Cool down
                                     break  # Only one order per cycle
                     

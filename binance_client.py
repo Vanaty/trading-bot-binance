@@ -220,23 +220,34 @@ class BinanceClient:
             logging.error(f"Position error: {error.status_code}, {error.error_code}, {error.error_message}")
             return []
     
-    def get_open_orders(self):
-        """Get open orders with validation"""
+    def get_open_orders(self, symbol=None):
+        """Get open orders with validation - can get for specific symbol or all symbols"""
         self.rate_limit_check('get_orders')
         try:
-            response = self.client.get_open_orders(recvWindow=6000)
-            if not response or not isinstance(response, list):
-                return []
-                
-            symbols = []
-            for elem in response:
-                symbol = elem.get('symbol', '')
-                if self.validate_symbol(symbol):
-                    symbols.append(symbol)
-            return list(set(symbols))
+            if symbol:
+                # Get orders for specific symbol
+                response = self.client.get_open_orders(symbol=symbol, recvWindow=6000)
+                if not response or not isinstance(response, list):
+                    return []
+                return response
+            else:
+                # Get all open orders
+                response = self.client.get_open_orders(recvWindow=6000)
+                if not response or not isinstance(response, list):
+                    return {}
+                    
+                # Group orders by symbol
+                orders_by_symbol = {}
+                for elem in response:
+                    symbol_name = elem.get('symbol', '')
+                    if self.validate_symbol(symbol_name):
+                        if symbol_name not in orders_by_symbol:
+                            orders_by_symbol[symbol_name] = []
+                        orders_by_symbol[symbol_name].append(elem)
+                return orders_by_symbol
         except ClientError as error:
             logging.error(f"Orders check error: {error.status_code}, {error.error_code}, {error.error_message}")
-            return []
+            return {} if symbol is None else []
     
     def cancel_open_orders(self, symbol):
         """Cancel all open orders for symbol"""
