@@ -72,19 +72,11 @@ def main():
             
             # Get current positions and orders
             positions = binance_client.get_positions()
+            
+            # Get all open orders at once to avoid rate limits and API errors
             try:
-                open_orders = {}
-                # Get open orders for each position symbol
-                for symbol in positions:
-                    orders = binance_client.get_open_orders(symbol)
-                    if orders:
-                        open_orders[symbol] = orders
-                # Also check for open orders on other symbols that might not have positions
-                for symbol in symbols[:20]:  # Check a subset to avoid rate limits
-                    if symbol not in open_orders:
-                        orders = binance_client.get_open_orders(symbol)
-                        if orders:
-                            open_orders[symbol] = orders
+                all_open_orders = binance_client.get_open_orders()  # Get all orders without symbol parameter
+                open_orders = all_open_orders if isinstance(all_open_orders, dict) else {}
             except Exception as e:
                 logging.warning(f"Error getting open orders: {str(e)}")
                 open_orders = {}
@@ -102,7 +94,6 @@ def main():
                 for symbol in symbols[:50]:  # Limit symbol processing
                     if len(positions) >= TradingConfig.MAX_POSITIONS:
                         break
-                    
                     try:
                         # Get enhanced signal
                         signal_data = strategy_engine.get_best_strategy_signal(symbol)
@@ -135,11 +126,8 @@ def main():
                                     positions = binance_client.get_positions()
                                     # Update open_orders after placing new order
                                     try:
-                                        open_orders = {}
-                                        for pos_symbol in positions:
-                                            orders = binance_client.get_open_orders(pos_symbol)
-                                            if orders:
-                                                open_orders[pos_symbol] = orders
+                                        all_open_orders = binance_client.get_open_orders()
+                                        open_orders = all_open_orders if isinstance(all_open_orders, dict) else {}
                                     except:
                                         open_orders = {}
                                     sleep(10)  # Cool down
