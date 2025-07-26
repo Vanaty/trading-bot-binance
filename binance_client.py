@@ -205,17 +205,30 @@ class BinanceClient:
         self.rate_limit_check('get_positions')
         try:
             resp = self.client.get_position_risk()
-            if not resp or not isinstance(resp, list):
-                logging.error("Invalid position response format")
+            
+            # Debug logging to see actual response
+            logging.debug(f"Position response type: {type(resp)}, length: {len(resp) if resp else 0}")
+            
+            if not resp:
+                logging.warning("Empty position response")
+                return []
+            
+            if not isinstance(resp, list):
+                logging.error(f"Unexpected position response format: {type(resp)}")
                 return []
                 
             positions = []
             for elem in resp:
-                position_amt = float(elem.get('positionAmt', 0))
-                if abs(position_amt) > 0:
-                    symbol = elem.get('symbol', '')
-                    if self.validate_symbol(symbol):
-                        positions.append(symbol)
+                try:
+                    position_amt = float(elem.get('positionAmt', 0))
+                    if abs(position_amt) > 0:
+                        symbol = elem.get('symbol', '')
+                        if self.validate_symbol(symbol):
+                            positions.append(symbol)
+                except (ValueError, TypeError) as e:
+                    logging.warning(f"Error parsing position data: {e}, elem: {elem}")
+                    continue
+                    
             return positions
         except Exception as error:
             logging.error(f"Position error: {str(error)}")
