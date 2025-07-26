@@ -1,0 +1,6 @@
+binance-futures-connector
+pandas
+ta
+apprise
+seaborn
+matplotlib
