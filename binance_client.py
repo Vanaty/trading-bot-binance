@@ -211,13 +211,14 @@ class BinanceClient:
                 
             positions = []
             for elem in resp:
-                if abs(float(elem.get('positionAmt', 0))) > 0:
+                position_amt = float(elem.get('positionAmt', 0))
+                if abs(position_amt) > 0:
                     symbol = elem.get('symbol', '')
                     if self.validate_symbol(symbol):
                         positions.append(symbol)
             return positions
-        except ClientError as error:
-            logging.error(f"Position error: {error.status_code}, {error.error_code}, {error.error_message}")
+        except Exception as error:
+            logging.error(f"Position error: {str(error)}")
             return []
     
     def get_open_orders(self, symbol=None):
@@ -226,6 +227,8 @@ class BinanceClient:
         try:
             if symbol:
                 # Get orders for specific symbol
+                if not self.validate_symbol(symbol):
+                    return []
                 response = self.client.get_open_orders(symbol=symbol, recvWindow=6000)
                 if not response or not isinstance(response, list):
                     return []
@@ -245,8 +248,8 @@ class BinanceClient:
                             orders_by_symbol[symbol_name] = []
                         orders_by_symbol[symbol_name].append(elem)
                 return orders_by_symbol
-        except ClientError as error:
-            logging.error(f"Orders check error: {error.status_code}, {error.error_code}, {error.error_message}")
+        except Exception as error:
+            logging.error(f"Orders check error: {str(error)}")
             return {} if symbol is None else []
     
     def cancel_open_orders(self, symbol):
