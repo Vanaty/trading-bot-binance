@@ -1,6 +1,7 @@
 binance-futures-connector
 pandas
 ta
+python-dotenv
 apprise
 seaborn
 matplotlib
