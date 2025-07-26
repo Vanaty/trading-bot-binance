@@ -234,20 +234,10 @@ class BinanceClient:
                     return []
                 return response
             else:
-                # Get all open orders
-                response = self.client.get_open_orders(recvWindow=6000)
-                if not response or not isinstance(response, list):
-                    return {}
-                    
-                # Group orders by symbol
-                orders_by_symbol = {}
-                for elem in response:
-                    symbol_name = elem.get('symbol', '')
-                    if self.validate_symbol(symbol_name):
-                        if symbol_name not in orders_by_symbol:
-                            orders_by_symbol[symbol_name] = []
-                        orders_by_symbol[symbol_name].append(elem)
-                return orders_by_symbol
+                # Get all open orders - Binance API doesn't support getting all orders without symbol
+                # So we return empty dict since we can't get all orders at once
+                logging.warning("Cannot get all open orders without symbol - Binance API limitation")
+                return {}
         except Exception as error:
             logging.error(f"Orders check error: {str(error)}")
             return {} if symbol is None else []
