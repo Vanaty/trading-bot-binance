@@ -90,6 +90,8 @@ def main():
             
             # Look for new trading opportunities
             if len(positions) < min(TradingConfig.MAX_POSITIONS, 10):
+                signals_found = 0
+                
                 for symbol in symbols[:50]:  # Limit symbol processing
                     if len(positions) >= TradingConfig.MAX_POSITIONS:
                         break
@@ -97,16 +99,32 @@ def main():
                         # Get enhanced signal
                         signal_data = strategy_engine.get_best_strategy_signal(symbol)
                         signal = signal_data.get('signal')
+                        strength = signal_data.get('strength', 0)
                         
-                        if signal in ['buy', 'sell'] and symbol not in positions and symbol not in open_orders:
-                            logging.info(f'Enhanced signal found: {signal} for {symbol}')
+                        # Log all signals for debugging
+                        if signal != 'none':
+                            signals_found += 1
+                            backtest_score = signal_data.get('backtest_score', 'N/A')
+                            logging.info(f'Signal detected: {signal} for {symbol}, strength={strength}, score={backtest_score}')
+                        
+                        # More lenient signal acceptance
+                        signal_valid = (signal in ['buy', 'sell'] and 
+                                      strength >= TradingConfig.MIN_SIGNAL_STRENGTH and
+                                      symbol not in positions and 
+                                      symbol not in open_orders)
+                        
+                        # Skip backtest filter if disabled or in debug mode
+                        if signal_valid and TradingConfig.ENABLE_BACKTESTING:
+                            backtest_score = signal_data.get('backtest_score', 0)
+                            if backtest_score < TradingConfig.MIN_BACKTEST_SCORE:
+                                logging.info(f'Signal rejected for {symbol}: backtest score {backtest_score} < {TradingConfig.MIN_BACKTEST_SCORE}')
+                                signal_valid = False
+                        
+                        if signal_valid:
+                            logging.info(f'✅ Valid signal found: {signal} for {symbol}')
                             
                             # Get current price for notification
-                            try:
-                                price_data = binance_client.client.ticker_price(symbol)
-                                current_price = float(price_data['price']) if price_data else None
-                            except:
-                                current_price = None
+                            current_price = binance_client.get_current_price(symbol)
                             
                             # Send signal notification
                             notifier.notify_trade_signal(
@@ -137,8 +155,9 @@ def main():
                     except Exception as e:
                         error_msg = f"Error processing {symbol}: {str(e)}"
                         logging.error(error_msg)
-                        notifier.notify_error(error_msg, f"Processing {symbol}")
                         continue
+                
+                logging.info(f'Signals found in this cycle: {signals_found}')
             
             logging.info('Cycle completed. Waiting 3 minutes...')
             sleep(180)

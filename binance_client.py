@@ -43,6 +43,14 @@ class BinanceClient:
         """Get USDT balance with validation"""
         self.rate_limit_check('get_balance')
         try:
+            # Try account info first (more reliable for futures)
+            response = self.client.account(recvWindow=6000)
+            if response and 'totalWalletBalance' in response:
+                balance = float(response['totalWalletBalance'])
+                logging.info(f"Account balance from totalWalletBalance: {balance}")
+                return balance
+            
+            # Fallback to balance method
             response = self.client.balance(recvWindow=6000)
             if not response or not isinstance(response, list):
                 logging.error("Invalid balance response format")
@@ -265,6 +273,24 @@ class BinanceClient:
             error_msg = f"Close orders error for {symbol}: {error.status_code}, {error.error_code}, {error.error_message}"
             logging.error(error_msg)
             notifier.notify_error(error_msg, "Close orders")
+
+    def get_current_price(self, symbol):
+        """Get current price with error handling"""
+        if not self.validate_symbol(symbol):
+            return None
+        
+        self.rate_limit_check('get_price')
+        try:
+            response = self.client.ticker_price(symbol)
+            if response and 'price' in response:
+                return float(response['price'])
+            return None
+        except ClientError as error:
+            logging.error(f"Price error for {symbol}: {error.status_code}, {error.error_code}, {error.error_message}")
+            return None
+        except Exception as e:
+            logging.error(f"Unexpected price error for {symbol}: {str(e)}")
+            return None
 
 # Global client instance
 binance_client = BinanceClient()

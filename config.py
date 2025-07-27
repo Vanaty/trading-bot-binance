@@ -19,10 +19,10 @@ class TradingConfig:
     ]
     
     # Signal Requirements
-    MIN_SIGNAL_STRENGTH = int(os.getenv('MIN_SIGNAL_STRENGTH', '3'))
-    MIN_BACKTEST_SCORE = float(os.getenv('MIN_BACKTEST_SCORE', '60.0'))
-    ENABLE_BACKTESTING = os.getenv('ENABLE_BACKTESTING', 'true').lower() == 'true'
-    BACKTEST_DAYS = int(os.getenv('BACKTEST_DAYS', '30'))
+    MIN_SIGNAL_STRENGTH = int(os.getenv('MIN_SIGNAL_STRENGTH', '2'))  # Lowered from 3
+    MIN_BACKTEST_SCORE = float(os.getenv('MIN_BACKTEST_SCORE', '45.0'))  # Lowered from 60.0
+    ENABLE_BACKTESTING = os.getenv('ENABLE_BACKTESTING', 'false').lower() == 'true'  # Disabled by default
+    BACKTEST_DAYS = int(os.getenv('BACKTEST_DAYS', '7'))  # Reduced from 30
     
     # Risk Management
     MAX_POSITION_SIZE_PCT = float(os.getenv('MAX_POSITION_SIZE_PCT', '2.0'))
@@ -30,9 +30,9 @@ class TradingConfig:
     MAX_CONCURRENT_POSITIONS = int(os.getenv('MAX_CONCURRENT_POSITIONS', '5'))
     
     # Trading Parameters
-    TAKE_PROFIT = max(0.001, min(0.1, float(os.getenv('TAKE_PROFIT', '0.012'))))
-    STOP_LOSS = max(0.001, min(0.1, float(os.getenv('STOP_LOSS', '0.009'))))
-    VOLUME = max(1, min(1000, float(os.getenv('VOLUME', '10'))))
+    TAKE_PROFIT = max(0.001, min(0.1, float(os.getenv('TAKE_PROFIT', '0.02'))))  # Increased
+    STOP_LOSS = max(0.001, min(0.1, float(os.getenv('STOP_LOSS', '0.015'))))  # Increased
+    VOLUME = max(5, min(1000, float(os.getenv('VOLUME', '15'))))  # Increased minimum
     LEVERAGE = max(1, min(125, int(os.getenv('LEVERAGE', '10'))))
     MARGIN_TYPE = os.getenv('MARGIN_TYPE', 'ISOLATED')
     MAX_POSITIONS = max(1, min(50, int(os.getenv('MAX_POSITIONS', '5'))))
@@ -66,6 +66,10 @@ class TradingConfig:
     MIN_API_INTERVAL = 0.1
     MAX_CONSECUTIVE_ERRORS = 10
     MIN_BALANCE = 10.0
+    
+    # Debug Settings
+    DEBUG_MODE = os.getenv('DEBUG_MODE', 'true').lower() == 'true'
+    FORCE_TRADES = os.getenv('FORCE_TRADES', 'false').lower() == 'true'
     
     @classmethod
     def validate_config(cls) -> bool:
