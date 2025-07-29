@@ -246,13 +246,13 @@ class BinanceClient:
         """Get open orders with validation - can get for specific symbol or all symbols"""
         self.rate_limit_check('get_orders')
         try:
-            params = {'recvWindow': 6000}
             if symbol:
                 if not self.validate_symbol(symbol):
                     return []
-                params['symbol'] = symbol
-            
-            response = self.client.get_open_orders(**params)
+                response = self.client.get_orders(symbol=symbol, recvWindow=6000)
+            else:
+                response = self.client.get_orders(recvWindow=6000)
+
             if not response or not isinstance(response, list):
                 return []
             return response
@@ -261,10 +261,10 @@ class BinanceClient:
             if error.error_code == -4049: # No orders found for the symbol
                 return []
             logging.error(f"Orders check error: {str(error)}")
-            return [] if symbol else {}
+            return []
         except Exception as error:
             logging.error(f"Orders check error: {str(error)}")
-            return [] if symbol else {}
+            return []
     
     def cancel_open_orders(self, symbol):
         """Cancel all open orders for symbol"""
