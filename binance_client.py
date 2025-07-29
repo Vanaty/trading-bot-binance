@@ -246,22 +246,25 @@ class BinanceClient:
         """Get open orders with validation - can get for specific symbol or all symbols"""
         self.rate_limit_check('get_orders')
         try:
+            params = {'recvWindow': 6000}
             if symbol:
-                # Get orders for specific symbol
                 if not self.validate_symbol(symbol):
                     return []
-                response = self.client.get_open_orders(symbol=symbol, recvWindow=6000)
-                if not response or not isinstance(response, list):
-                    return []
-                return response
-            else:
-                # Get all open orders - Binance API doesn't support getting all orders without symbol
-                # So we return empty dict since we can't get all orders at once
-                logging.warning("Cannot get all open orders without symbol - Binance API limitation")
-                return {}
+                params['symbol'] = symbol
+            
+            response = self.client.get_open_orders(**params)
+            if not response or not isinstance(response, list):
+                return []
+            return response
+        except ClientError as error:
+            # The API returns an error if there are no open orders for a specific symbol.
+            if error.error_code == -4049: # No orders found for the symbol
+                return []
+            logging.error(f"Orders check error: {str(error)}")
+            return [] if symbol else {}
         except Exception as error:
             logging.error(f"Orders check error: {str(error)}")
-            return {} if symbol is None else []
+            return [] if symbol else {}
     
     def cancel_open_orders(self, symbol):
         """Cancel all open orders for symbol"""
