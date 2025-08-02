@@ -1,6 +1,6 @@
 import logging
 import apprise
-from datetime import datetime
+from datetime import datetime,timezone,timedelta
 from config import TradingConfig
 
 class NotificationManager:
@@ -33,7 +33,8 @@ class NotificationManager:
                 title = f"ℹ️ {title}"
                 
             # Format message with timestamp
-            formatted_message = f"{message}\n\n🕐 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            tz = timezone.utc if TradingConfig.TIMEZONE == 'UTC' else timezone(timedelta(hours=int(TradingConfig.TIMEZONE.replace('UTC',''))))
+            formatted_message = f"{message}\n\n🕐 {datetime.now(tz=tz).strftime('%Y-%m-%d %H:%M:%S')}"
             
             # Send notification
             self.apobj.notify(title=title, body=formatted_message)

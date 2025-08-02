@@ -61,6 +61,7 @@ class TradingConfig:
     NOTIFY_ON_ERRORS = os.getenv('NOTIFY_ON_ERRORS', 'true').lower() == 'true'
     NOTIFY_ON_STARTUP = os.getenv('NOTIFY_ON_STARTUP', 'true').lower() == 'true'
     NOTIFY_ON_BALANCE_LOW = os.getenv('NOTIFY_ON_BALANCE_LOW', 'true').lower() == 'true'
+    TIMEZONE = os.getenv('TIMEZONE', 'UTC')  # Default to UTC, can be set to 'UTC+3' or similar
     
     # Security Settings
     MIN_API_INTERVAL = 0.1
