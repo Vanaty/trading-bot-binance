@@ -37,7 +37,7 @@ def main():
     
     # Send startup notification
     if TradingConfig.NOTIFY_ON_STARTUP:
-        startup_details = f"Symbols: {len(symbols)}\nLeverage: {TradingConfig.LEVERAGE}x\nMax positions: {TradingConfig.MAX_POSITIONS}"
+        startup_details = f"Symbols: {len(symbols)}\nLeverage: {TradingConfig.LEVERAGE}x\nTP:{round(TradingConfig.TAKE_PROFIT * 100,2)}%\nSL:{round(TradingConfig.STOP_LOSS * 100,2)}%\nMax positions: {TradingConfig.MAX_POSITIONS}"
         notifier.notify_bot_status("Started", startup_details)
     
     while True:
