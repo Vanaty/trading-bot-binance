@@ -70,7 +70,7 @@ class AdvancedStrategy:
     def rsi_bollinger_vwap_strategy(self, symbol: str) -> Dict[str, any]:
         """Enhanced RSI + Bollinger Bands + VWAP strategy"""
         try:
-            kl = binance_client.get_klines(symbol)
+            kl = binance_client.get_klines(symbol, interval=TradingConfig.KLINE_INTERVAL)
             if kl is None or len(kl) < 50:
                 return {'signal': 'none', 'strength': 0, 'reasons': []}
             
@@ -138,7 +138,7 @@ class AdvancedStrategy:
     def macd_ema_volume_strategy(self, symbol: str) -> Dict[str, any]:
         """MACD + EMA + Volume strategy"""
         try:
-            kl = binance_client.get_klines(symbol)
+            kl = binance_client.get_klines(symbol, interval=TradingConfig.KLINE_INTERVAL)
             if kl is None or len(kl) < 50:
                 return {'signal': 'none', 'strength': 0, 'reasons': []}
             
@@ -195,7 +195,7 @@ class AdvancedStrategy:
     def stochastic_fibonacci_trend_strategy(self, symbol: str) -> Dict[str, any]:
         """Stochastic + Fibonacci + Trend strategy"""
         try:
-            kl = binance_client.get_klines(symbol)
+            kl = binance_client.get_klines(symbol, interval=TradingConfig.KLINE_INTERVAL)
             if kl is None or len(kl) < 50:
                 return {'signal': 'none', 'strength': 0, 'reasons': []}
             
@@ -262,7 +262,7 @@ class AdvancedStrategy:
             start_time = end_time - timedelta(days=days)
             
             hist_data = pd.DataFrame(binance_client.client.klines(
-                symbol, '15m', 
+                symbol, TradingConfig.KLINE_INTERVAL, 
                 startTime=int(start_time.timestamp() * 1000),
                 endTime=int(end_time.timestamp() * 1000),
                 limit=1000

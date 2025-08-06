@@ -36,6 +36,8 @@ class TradingConfig:
     LEVERAGE = max(1, min(125, int(os.getenv('LEVERAGE', '10'))))
     MARGIN_TYPE = os.getenv('MARGIN_TYPE', 'ISOLATED')
     MAX_POSITIONS = max(1, min(50, int(os.getenv('MAX_POSITIONS', '5'))))
+    KLINE_INTERVAL = os.getenv('KLINE_INTERVAL', '15m')
+    BINANCE_FEE = 0.0005  # 0.05% maker/taker fee on futures, x2 for open/close
     
     # Technical Indicators Parameters
     RSI_PERIOD = int(os.getenv('RSI_PERIOD', '14'))
@@ -78,13 +80,17 @@ class TradingConfig:
         if not cls.API_KEY or not cls.SECRET_KEY:
             raise ValueError("API credentials not found. Set BINANCE_API_KEY and BINANCE_SECRET_KEY environment variables")
         
+        # Valid Binance intervals
+        valid_intervals = ['1s', '1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M']
+        
         validations = [
             (0 < cls.MIN_SIGNAL_STRENGTH <= 5, "MIN_SIGNAL_STRENGTH must be between 1 and 5"),
             (0 < cls.MIN_BACKTEST_SCORE <= 100, "MIN_BACKTEST_SCORE must be between 0 and 100"),
             (0 < cls.MAX_POSITION_SIZE_PCT <= 10, "MAX_POSITION_SIZE_PCT must be between 0 and 10"),
             (0 < cls.VOLUME_THRESHOLD <= 10, "VOLUME_THRESHOLD must be between 0 and 10"),
             (0 < cls.STOP_LOSS < 0.1, "STOP_LOSS must be between 0 and 0.1"),
-            (0 < cls.TAKE_PROFIT < 0.2, "TAKE_PROFIT must be between 0 and 0.2")
+            (0 < cls.TAKE_PROFIT < 0.2, "TAKE_PROFIT must be between 0 and 0.2"),
+            (cls.KLINE_INTERVAL in valid_intervals, f"KLINE_INTERVAL must be one of: {', '.join(valid_intervals)}")
         ]
         
         for condition, message in validations:

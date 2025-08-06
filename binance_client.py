@@ -197,7 +197,7 @@ class BinanceClient:
                 order_params['price'] = price
             if stop_price:
                 order_params['stopPrice'] = stop_price
-            
+
             response = self.client.new_order(**order_params)
             logging.info(f"Order placed: {response}")
             return response

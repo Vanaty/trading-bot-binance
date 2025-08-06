@@ -74,13 +74,19 @@ class TradingManager:
             
             # Set stop loss and take profit with better error handling
             try:
+                # Ensure take_profit covers fees and is profitable
+                effective_take_profit = max(
+                    TradingConfig.TAKE_PROFIT, 
+                    TradingConfig.STOP_LOSS + TradingConfig.BINANCE_FEE + 0.001 # min profit
+                )
+
                 if side == 'buy':
                     sl_price = round(price * (1 - TradingConfig.STOP_LOSS), price_precision)
-                    tp_price = round(price * (1 + TradingConfig.TAKE_PROFIT), price_precision)
+                    tp_price = round(price * (1 + effective_take_profit), price_precision)
                     sl_side, tp_side = 'SELL', 'SELL'
                 else:
                     sl_price = round(price * (1 + TradingConfig.STOP_LOSS), price_precision)
-                    tp_price = round(price * (1 - TradingConfig.TAKE_PROFIT), price_precision)
+                    tp_price = round(price * (1 - effective_take_profit), price_precision)
                     sl_side, tp_side = 'BUY', 'BUY'
                 
                 # Place stop loss
