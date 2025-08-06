@@ -265,11 +265,11 @@ class BinanceClient:
         except Exception as error:
             logging.error(f"Orders check error: {str(error)}")
             return []
-    def cancel_order(self, order_id):
+    def cancel_order(self,symbol, order_id):
         """Cancel specific order by ID"""
         self.rate_limit_check('cancel_order')
         try:
-            response = self.client.cancel_order(orderId=order_id, recvWindow=6000)
+            response = self.client.cancel_order(symbol,orderId=order_id, recvWindow=6000)
             logging.info(f"Order cancelled: {response}")
             return response
         except ClientError as error:

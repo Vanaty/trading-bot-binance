@@ -79,7 +79,8 @@ def main():
                     orders = binance_client.get_open_orders()
                     if orders:
                         for order in orders:
-                            binance_client.cancel_order(order['orderId'])
+                            symb = order['symbol']
+                            binance_client.cancel_order(symb,order['orderId'])
                             logging.info(f"Cancelled orphaned order {order['orderId']} for {symbol}")
                         sleep(0.5)
                 except Exception as e:
