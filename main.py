@@ -73,6 +73,18 @@ def main():
             # Get current positions
             positions = binance_client.get_positions()
             
+            # If no positions, close all open orders
+            if not positions:
+                try:
+                    orders = binance_client.get_open_orders()
+                    if orders:
+                        for order in orders:
+                            binance_client.cancel_open_orders(symbol, order['orderId'])
+                            logging.info(f"Cancelled orphaned order {order['orderId']} for {symbol}")
+                        sleep(0.5)
+                except Exception as e:
+                    logging.warning(f"Error cleaning up orders: {str(e)}")
+            
             # Get open orders only for symbols that have positions
             open_orders = {}
             for symbol in positions:

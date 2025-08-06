@@ -266,10 +266,12 @@ class BinanceClient:
             logging.error(f"Orders check error: {str(error)}")
             return []
     
-    def cancel_open_orders(self, symbol):
-        """Cancel all open orders for symbol"""
+    def cancel_open_orders(self, symbol, order_id=None):
+        """Cancel open orders for symbol or specific order ID"""
         try:
-            response = self.client.cancel_open_orders(symbol=symbol, recvWindow=6000)
+            if not order_id:
+                response = self.client.cancel_open_orders(symbol=symbol, recvWindow=6000)
+            response = self.client.cancel_order(symbol=symbol, orderId=order_id)
             logging.info(f"Open orders closed for {symbol}")
             notifier.notify_position_closed(symbol)
         except ClientError as error:
@@ -294,6 +296,7 @@ class BinanceClient:
         except Exception as e:
             logging.error(f"Unexpected price error for {symbol}: {str(e)}")
             return None
+    
 
 # Global client instance
 binance_client = BinanceClient()
