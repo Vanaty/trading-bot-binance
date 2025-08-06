@@ -37,7 +37,7 @@ class TradingConfig:
     MARGIN_TYPE = os.getenv('MARGIN_TYPE', 'ISOLATED')
     MAX_POSITIONS = max(1, min(50, int(os.getenv('MAX_POSITIONS', '5'))))
     KLINE_INTERVAL = os.getenv('KLINE_INTERVAL', '15m')
-    BINANCE_FEE = 0.0005  # 0.05% maker/taker fee on futures, x2 for open/close
+    BINANCE_FEE =  float(os.getenv('BINANCE_FEE', 0.0005))  # 0.05% maker/taker fee on futures, x2 for open/close
     
     # Technical Indicators Parameters
     RSI_PERIOD = int(os.getenv('RSI_PERIOD', '14'))
