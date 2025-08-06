@@ -81,7 +81,7 @@ def main():
                         for order in orders:
                             symb = order['symbol']
                             binance_client.cancel_order(symb,order['orderId'])
-                            logging.info(f"Cancelled orphaned order {order['orderId']} for {symbol}")
+                            logging.info(f"Cancelled orphaned order {order['orderId']} for {symb}")
                         sleep(0.5)
                 except Exception as e:
                     logging.warning(f"Error cleaning up orders: {str(e)}")
